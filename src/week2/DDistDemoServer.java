@@ -190,7 +190,7 @@ public class DDistDemoServer {
             out.println("Content-Type: application/pdf");
         } 
         else if(fileExt.equals("txt")) {
-            out.println("Content-Type: text/plain");
+            out.println("Content-Type: text/html");
         }
         
         out.println();
