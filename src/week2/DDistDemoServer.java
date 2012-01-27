@@ -125,13 +125,18 @@ public class DDistDemoServer {
         String[] request = input.split(" ");
         if(request[0].equals("GET")) {
             String filename = request[1];
-            File file = new File("FilesToBeServed" + filename);
 
+            // Handle requests to root
+            if(filename.equals("/")) {
+                filename = "/index.html";
+            }
+
+            File file = new File("FilesToBeServed" + filename);
+            
             System.out.print("Client requesting '"+filename+"'");
 
             // start an outputstream
             PrintStream out = new PrintStream(socket.getOutputStream());
-
             if(file.exists()) {
                 // send responseheader
                 out.println("HTTP/1.0 200 ");
@@ -145,7 +150,11 @@ public class DDistDemoServer {
             } else {
                 // send responseheader
                 out.println("HTTP/1.0 404 ");
+                out.println("Content-Type: text/html");
                 out.println();
+                out.println("Den efterspurgte fil findes ikke.");
+                
+                out.flush();
 
                 System.out.println(" - File not found");
             }
