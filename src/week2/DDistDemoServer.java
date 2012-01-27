@@ -100,12 +100,9 @@ public class DDistDemoServer {
                     String s;
                     // Read and print what the client is sending
                     while (!(s = fromClient.readLine()).equals("")) { // Ctrl-D terminates the connection
-                        System.out.println("From the client: " + s);
+                        //System.out.println("From the client: " + s);
                         processInput(socket, s);
                     }
-
-                    System.out.println();
-                    System.out.println();
 
                     socket.close();
                 } catch (IOException e) {
@@ -121,15 +118,16 @@ public class DDistDemoServer {
 
         deregisterOnPort();
 
-        System.out.println("Goodbuy world!");
+        System.out.println("Goodbye world!");
     }
 
     private void processInput(Socket socket, String input) throws IOException {
         String[] request = input.split(" ");
         if(request[0].equals("GET")) {
-            System.out.println("Client requesting '"+request[1]+"'");
-            
-            File file = new File("FilesToBeServed" + request[1]);
+            String filename = request[1];
+            File file = new File("FilesToBeServed" + filename);
+
+            System.out.print("Client requesting '"+filename+"'");
 
             // start an outputstream
             PrintStream out = new PrintStream(socket.getOutputStream());
@@ -137,48 +135,67 @@ public class DDistDemoServer {
             if(file.exists()) {
                 // send responseheader
                 out.println("HTTP/1.0 200 ");
-                addHeaders(out, request[1]);
 
-                BufferedReader br = new BufferedReader(new FileReader(file));
-
-                String line;
-                while((line = br.readLine()) != null) {
-                    out.print(line);
-                }
-
+                setHeaders(out, file);
+                serveFile(out, file);
+                
                 out.flush();
 
-                br.close();
-
-                System.out.println("Filen blev returneret :D");
+                System.out.println(" - File returned");
             } else {
                 // send responseheader
-                out.println("HTTP/1.0 404 FileNotFound");
+                out.println("HTTP/1.0 404 ");
                 out.println();
 
-                System.out.println("Filen findes ikke !!");
+                System.out.println(" - File not found");
             }
         }
     }
+
+    private void serveFile(PrintStream out, File file) throws IOException {
+        InputStream is = new BufferedInputStream(new FileInputStream(file));
+
+        byte[] buff = new byte[1024];
+        while(is.read(buff) > 0) {
+            out.print(new String(buff));
+        }
+
+        is.close();
+    }
     
-    private void addHeaders(PrintStream out, String filename) {
-        // get file extension
+    private void setHeaders(PrintStream out, File file) {
+        // Determine file extension
+        String filename = file.getName();
         int dotPos= filename.lastIndexOf(".");
         String fileExt = filename.substring(dotPos+1,filename.length());
         
+        // Set corresponding headers
         if(fileExt.equals("html")) {
             out.println("Content-Type: text/html");
-        } else if(fileExt.equals("png")) {
+        } 
+        else if(fileExt.equals("png")) {
+            out.println("Content-Lenght: " + file.length());
             out.println("Content-Type: image/png");
-        } else if(fileExt.equals("gif")) {
+        } 
+        else if(fileExt.equals("gif")) {
+            out.println("Content-Lenght: " + file.length());
             out.println("Content-Type: image/gif");
-        } else if(fileExt.equals("jpg")) {
+        } 
+        else if(fileExt.equals("jpg")) {
+            out.println("Content-Lenght: " + file.length());
             out.println("Content-Type: image/jpeg");
+        } 
+        else if(fileExt.equals("pdf")) {
+            out.println("Content-Lenght: " + file.length());
+            out.println("Content-Type: application/pdf");
+        } 
+        else if(fileExt.equals("txt")) {
+            out.println("Content-Type: text/plain");
         }
         
         out.println();
     }
-
+    
     public static void main(String[] args) throws IOException {
         DDistDemoServer server = new DDistDemoServer();
         server.run();
