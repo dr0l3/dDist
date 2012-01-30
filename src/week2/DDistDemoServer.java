@@ -166,7 +166,7 @@ public class DDistDemoServer {
 
         byte[] buff = new byte[1024];
         while(is.read(buff) > 0) {
-            out.print(new String(buff));
+            out.write(buff);
         }
 
         is.close();
