@@ -123,7 +123,7 @@ public class DDistDemoServer {
 
     private void processInput(Socket socket, String input) throws IOException {
         String[] request = input.split(" ");
-        if(request[0].equals("GET")) {
+        if(request[0].equals("GET")) { // ignore all headers except the request line
             String filename = request[1];
 
             // Handle requests to root
